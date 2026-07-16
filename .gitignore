@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Environment Variables
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+
+# Dataset Outputs
+datasets/generated/
+backend/app/mock_data/generated/
+
+# Node
+node_modules/
+
+# Vite
+frontend/dist/
+
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# SQLite
+*.db
