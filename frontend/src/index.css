@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Custom styles for professional refinery control room feel */
+.gauge-track {
+  stroke: #e2e8f0;
+}
+
+.glow-safe {
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
+}
+
+.glow-moderate {
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.15);
+}
+
+.glow-high {
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.15);
+}
+
+.glow-critical {
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
+}
+
+/* Custom Scrollbar for modern interface styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
