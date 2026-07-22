@@ -132,10 +132,10 @@ export const Dashboard = () => {
       <Navbar isConnected={isConnected} />
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
         {/* Four KPI Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <KPICard
             title="Overall Risk Status"
             value={metrics.overall_risk}
@@ -171,29 +171,30 @@ export const Dashboard = () => {
 
         {/* Operational Summary & AI Insights */}
         {metrics.summary && (
-          <div className="bg-white border border-refinery-border rounded-xl p-6 shadow-refinery flex items-start space-x-4 relative overflow-hidden">
+          <div className="bg-white border border-refinery-border rounded-xl p-6 shadow-refinery flex items-start space-x-4 relative overflow-hidden hover:shadow-refineryHover transition-all duration-300">
             <div className="absolute top-0 left-0 h-full w-1.5 bg-blue-600"></div>
-            <div className="bg-blue-50 text-blue-600 p-2.5 rounded-lg border border-blue-100/50 shrink-0">
-              <Sparkles className="h-5 w-5 stroke-[1.8]" />
+            <div className="bg-blue-50 text-blue-600 p-3 rounded-lg border border-blue-100 shrink-0">
+              <ShieldAlert className="h-5 w-5" />
             </div>
-            <div className="space-y-1.5">
-              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-widest">
+            <div className="space-y-1">
+              <h4 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
                 Operational Risk Summary & AI Insights
               </h4>
-              <p className="text-xs text-refinery-text-secondary leading-relaxed font-medium">
+              <p className="text-sm text-slate-700 leading-relaxed font-semibold">
                 {metrics.summary}
               </p>
             </div>
           </div>
         )}
+
         {/* Core Layout Split */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
           {/* Left Panel: Zone Telemetries, Charts, and Timelines (Col Span 8) */}
-          <div className="lg:col-span-8 space-y-8">
+          <div className="lg:col-span-8 space-y-6">
 
             {/* Zone Telemetry Cards Panel */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-md font-bold text-slate-800 tracking-tight uppercase">
@@ -204,7 +205,7 @@ export const Dashboard = () => {
                   </p>
                 </div>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {metrics.zones && metrics.zones.length > 0 ? (
                   metrics.zones.map((zoneData) => (
                     <ZoneCard key={zoneData.zone} zoneData={zoneData} />
@@ -220,33 +221,32 @@ export const Dashboard = () => {
                   </div>
                 )}
               </div>
-
-              {/* Risk Trend Chart */}
-              <RiskChart data={chartHistory} />
-
-              {/* Incident Log Timeline */}
-              <Timeline events={timeline} />
-
             </div>
 
-            {/* Right Panel: AI Analyst (Col Span 4) */}
-            <div className="lg:col-span-4 lg:sticky lg:top-24">
-              <AISidebar
-                activeZone={
-                  selectedZone ||
-                  (metrics.zones && metrics.zones.length > 0
-                    ? metrics.zones.reduce((max, z) => (z.risk_score > max.risk_score ? z : max), metrics.zones[0])
-                    : null)
-                }
-                zones={metrics.zones || []}
-                onSelectZone={(z) => setSelectedZone(z)}
-              />
-            </div>
+            {/* Risk Trend Chart */}
+            <RiskChart data={chartHistory} />
 
+            {/* Incident Log Timeline */}
+            <Timeline events={timeline} />
 
           </div>
 
+          {/* Right Panel: AI Analyst (Col Span 4) */}
+          <div className="lg:col-span-4 lg:sticky lg:top-6">
+            <AISidebar
+              activeZone={
+                selectedZone ||
+                (metrics.zones && metrics.zones.length > 0
+                  ? metrics.zones.reduce((max, z) => (z.risk_score > max.risk_score ? z : max), metrics.zones[0])
+                  : null)
+              }
+              zones={metrics.zones || []}
+              onSelectZone={(z) => setSelectedZone(z)}
+            />
+          </div>
+
         </div>
+
       </div>
     </div>
   );

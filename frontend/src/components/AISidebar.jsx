@@ -1,22 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Sparkles,
   Brain,
   RefreshCw,
   AlertTriangle,
   CheckCircle2,
   ShieldAlert,
   ListChecks,
-  Activity,
-  Flame,
-  FileText,
-  ChevronRight
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 
 export const AISidebar = ({ activeZone, zones = [], onSelectZone }) => {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [generatedTime, setGeneratedTime] = useState(null);
 
   // Auto reset or trigger when zone changes if appropriate
   const currentZone = activeZone || (zones.length > 0 ? zones[0] : null);
@@ -29,18 +27,13 @@ export const AISidebar = ({ activeZone, zones = [], onSelectZone }) => {
 
     const payload = {
       zone: currentZone.zone || "Zone A",
-
-      // Raw telemetry
       temperature: currentZone.temperature ?? 0,
       pressure: currentZone.pressure ?? 0,
       gas_level: currentZone.gas_level ?? 0,
       ventilation: currentZone.ventilation ?? 0,
-
       maintenance_activity: currentZone.maintenance_activity ?? false,
       hot_work_permit: currentZone.hot_work_permit ?? false,
       confined_space_entry: currentZone.confined_space_entry ?? false,
-
-      // Risk engine output
       incident_type: currentZone.incident_type || "Safe",
       risk_score: currentZone.risk_score || 0,
       confidence_score: currentZone.confidence_score || currentZone.confidence || 75,
@@ -48,6 +41,7 @@ export const AISidebar = ({ activeZone, zones = [], onSelectZone }) => {
       risk_factors: currentZone.risk_factors || [],
       recommended_actions: currentZone.recommended_actions || []
     };
+
     try {
       const response = await fetch('http://localhost:8000/explain', {
         method: 'POST',
@@ -63,6 +57,14 @@ export const AISidebar = ({ activeZone, zones = [], onSelectZone }) => {
 
       const data = await response.json();
       setReport(data);
+
+      const now = new Date();
+      setGeneratedTime(now.toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }));
     } catch (err) {
       console.error('Failed to fetch AI explanation:', err);
       setError(err.message || 'Could not connect to Gemini API endpoint');
@@ -80,16 +82,23 @@ export const AISidebar = ({ activeZone, zones = [], onSelectZone }) => {
   };
 
   return (
-    <div className="bg-white border border-refinery-border rounded-xl p-6 shadow-refinery flex flex-col justify-between space-y-6">
+    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-refinery flex flex-col justify-between space-y-6">
 
-      {/* Title / Header */}
-      <div>
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-          <div className="flex items-center space-x-2">
-            <Brain className="h-5 w-5 text-blue-600 shrink-0" />
-            <h4 className="text-sm font-bold text-slate-800 tracking-tight uppercase">
-              AI Safety Analyst
-            </h4>
+      {/* Header Info Block */}
+      <div className="space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <Brain className="h-5 w-5 text-blue-600 shrink-0" />
+              <h4 className="text-sm font-extrabold text-slate-800 tracking-tight uppercase">
+                AI Safety Analyst
+              </h4>
+            </div>
+            {generatedTime && (
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                Generated: {generatedTime}
+              </p>
+            )}
           </div>
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200 uppercase tracking-wider">
             Gemini 2.5 Flash
@@ -98,33 +107,34 @@ export const AISidebar = ({ activeZone, zones = [], onSelectZone }) => {
 
         {/* Zone Selector */}
         {zones.length > 0 && (
-          <div className="mt-4">
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-              Select Monitored Sector:
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Select Sector
             </label>
-            <div className="flex items-center space-x-2">
-              <select
-                value={currentZone?.zone || ''}
-                onChange={(e) => {
-                  const z = zones.find((item) => item.zone === e.target.value);
-                  if (z && onSelectZone) onSelectZone(z);
-                  setReport(null);
-                }}
-                className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
-              >
-                {zones.map((z) => (
-                  <option key={z.zone} value={z.zone}>
-                    {z.zone} — Risk: {z.risk_score} ({z.incident_type})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={currentZone?.zone || ''}
+              onChange={(e) => {
+                const z = zones.find((item) => item.zone === e.target.value);
+                if (z && onSelectZone) onSelectZone(z);
+                setReport(null);
+                setGeneratedTime(null);
+              }}
+              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
+            >
+              {zones.map((z) => (
+                <option key={z.zone} value={z.zone}>
+                  {z.zone} — Risk: {z.risk_score} ({z.incident_type})
+                </option>
+              ))}
+            </select>
           </div>
         )}
       </div>
 
+      <div className="border-t border-slate-100 my-1"></div>
+
       {/* Main Content Body */}
-      <div className="flex-1 space-y-4 max-h-[520px] overflow-y-auto pr-1">
+      <div className="flex-1 space-y-5 max-h-[540px] overflow-y-auto pr-1">
         {!report && !loading && !error && (
           <div className="py-8 flex flex-col items-center justify-center text-center">
             <div className="relative mb-5">
@@ -137,7 +147,7 @@ export const AISidebar = ({ activeZone, zones = [], onSelectZone }) => {
             <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">
               AI Analysis Ready
             </p>
-            <p className="text-xs text-refinery-text-muted mt-1 max-w-[220px]">
+            <p className="text-xs text-refinery-text-muted mt-1.5 max-w-[220px] font-medium leading-relaxed">
               Select a refinery zone and trigger Gemini AI to synthesize operational safety intelligence.
             </p>
           </div>
@@ -147,13 +157,13 @@ export const AISidebar = ({ activeZone, zones = [], onSelectZone }) => {
           <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
             <div className="relative">
               <div className="h-12 w-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-              <Sparkles className="h-5 w-5 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+              <Brain className="h-5 w-5 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
             <div>
               <p className="text-xs font-bold text-slate-800 uppercase tracking-wider animate-pulse">
                 Synthesizing Safety Report...
               </p>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[11px] text-slate-400 mt-1 font-semibold">
                 Invoking Gemini API with active sensor vectors
               </p>
             </div>
@@ -166,117 +176,130 @@ export const AISidebar = ({ activeZone, zones = [], onSelectZone }) => {
               <AlertTriangle className="h-4 w-4 shrink-0" />
               <span>AI Report Generation Failed</span>
             </div>
-            <p className="text-rose-600 leading-relaxed text-[11px]">
+            <p className="text-rose-600 leading-relaxed text-[11px] font-medium">
               {error}
             </p>
           </div>
         )}
 
         {report && !loading && (
-          <div className="space-y-4 animate-fadeIn">
-            {/* Report Priority Header */}
-            <div className="flex items-center justify-between bg-slate-50 border border-slate-200 p-3 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <FileText className="h-4 w-4 text-blue-600" />
-                <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
-                  {currentZone?.zone} Report
-                </span>
-              </div>
-              <span className={`px-2.5 py-1 rounded text-[10px] font-black tracking-widest uppercase border ${getPriorityBadgeClass(report.priority)}`}>
-                {report.priority} PRIORITY
-              </span>
-            </div>
-
+          <div className="space-y-5 animate-fadeIn">
             {/* Executive Summary */}
-            <div className="bg-blue-50/60 border border-blue-100 p-3.5 rounded-lg space-y-1">
-              <h5 className="text-[10px] font-black text-blue-800 uppercase tracking-widest flex items-center gap-1">
-                <Brain className="h-3 w-3 text-blue-600" />
+            <div className="space-y-1.5">
+              <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                <Brain className="h-3.5 w-3.5 text-blue-600" />
                 Executive Summary
               </h5>
-              <p className="text-xs text-slate-700 leading-relaxed font-medium">
+              <p className="text-xs text-slate-700 leading-relaxed font-semibold">
                 {report.executive_summary}
               </p>
             </div>
 
+            <div className="border-t border-slate-100"></div>
+
+            {/* Priority Badge */}
+            <div className="space-y-1.5">
+              <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+                Safety Priority Level
+              </h5>
+              <div className={`w-full text-center py-2.5 rounded text-xs font-black tracking-widest uppercase border ${getPriorityBadgeClass(report.priority)}`}>
+                {report.priority} PRIORITY
+              </div>
+            </div>
+
             {/* Root Causes */}
             {report.root_causes && report.root_causes.length > 0 && (
-              <div className="space-y-1.5">
-                <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3 text-amber-500" />
-                  Root Causes
-                </h5>
-                <ul className="space-y-1 pl-1">
-                  {report.root_causes.map((cause, idx) => (
-                    <li key={idx} className="flex items-start text-[11px] text-slate-700 font-medium">
-                      <ChevronRight className="h-3 w-3 text-amber-500 shrink-0 mt-0.5 mr-1" />
-                      <span>{cause}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <>
+                <div className="border-t border-slate-100"></div>
+                <div className="space-y-2">
+                  <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                    Root Causes
+                  </h5>
+                  <ul className="space-y-1.5 pl-1">
+                    {report.root_causes.map((cause, idx) => (
+                      <li key={idx} className="flex items-start text-xs text-slate-700 font-semibold leading-relaxed">
+                        <ChevronRight className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5 mr-1" />
+                        <span>{cause}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
             )}
 
             {/* Possible Consequences */}
             {report.possible_consequences && report.possible_consequences.length > 0 && (
-              <div className="space-y-1.5">
-                <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                  <ShieldAlert className="h-3 w-3 text-rose-500" />
-                  Possible Consequences
-                </h5>
-                <ul className="space-y-1 pl-1">
-                  {report.possible_consequences.map((item, idx) => (
-                    <li key={idx} className="flex items-start text-[11px] text-slate-700 font-medium">
-                      <ChevronRight className="h-3 w-3 text-rose-500 shrink-0 mt-0.5 mr-1" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <>
+                <div className="border-t border-slate-100"></div>
+                <div className="space-y-2">
+                  <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <ShieldAlert className="h-3.5 w-3.5 text-rose-500" />
+                    Possible Consequences
+                  </h5>
+                  <ul className="space-y-1.5 pl-1">
+                    {report.possible_consequences.map((item, idx) => (
+                      <li key={idx} className="flex items-start text-xs text-slate-700 font-semibold leading-relaxed">
+                        <ChevronRight className="h-3.5 w-3.5 text-rose-500 shrink-0 mt-0.5 mr-1" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
             )}
 
             {/* Immediate Actions */}
             {report.immediate_actions && report.immediate_actions.length > 0 && (
-              <div className="space-y-1.5">
-                <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                  Immediate Directives
-                </h5>
-                <ul className="space-y-1 pl-1">
-                  {report.immediate_actions.map((act, idx) => (
-                    <li key={idx} className="flex items-start text-[11px] text-slate-700 font-medium">
-                      <span className="h-3.5 w-3.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[9px] mr-1.5 mt-0.5 shrink-0">
-                        {idx + 1}
-                      </span>
-                      <span>{act}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <>
+                <div className="border-t border-slate-100"></div>
+                <div className="space-y-2">
+                  <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                    Immediate Directives
+                  </h5>
+                  <ul className="space-y-2 pl-1">
+                    {report.immediate_actions.map((act, idx) => (
+                      <li key={idx} className="flex items-start text-xs text-slate-700 font-semibold leading-relaxed">
+                        <span className="h-4 w-4 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center justify-center font-bold text-[9px] mr-2 mt-0.5 shrink-0">
+                          {idx + 1}
+                        </span>
+                        <span>{act}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
             )}
 
-            {/* Long Term Prevention */}
+            {/* Long Term Prevention / Recommendations */}
             {report.long_term_prevention && report.long_term_prevention.length > 0 && (
-              <div className="space-y-1.5">
-                <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                  <ListChecks className="h-3 w-3 text-blue-600" />
-                  Long-Term Prevention
-                </h5>
-                <ul className="space-y-1 pl-1">
-                  {report.long_term_prevention.map((prev, idx) => (
-                    <li key={idx} className="flex items-start text-[11px] text-slate-700 font-medium">
-                      <ChevronRight className="h-3 w-3 text-blue-500 shrink-0 mt-0.5 mr-1" />
-                      <span>{prev}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <>
+                <div className="border-t border-slate-100"></div>
+                <div className="space-y-2">
+                  <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <ListChecks className="h-3.5 w-3.5 text-blue-600" />
+                    Long-Term Recommendations
+                  </h5>
+                  <ul className="space-y-1.5 pl-1">
+                    {report.long_term_prevention.map((prev, idx) => (
+                      <li key={idx} className="flex items-start text-xs text-slate-700 font-semibold leading-relaxed">
+                        <ChevronRight className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5 mr-1" />
+                        <span>{prev}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
             )}
           </div>
         )}
       </div>
 
+      <div className="border-t border-slate-100 my-1"></div>
+
       {/* Control Action Panel */}
-      <div className="space-y-2 pt-2 border-t border-slate-100">
+      <div className="space-y-2 pt-2">
         <button
           onClick={handleGenerateExplanation}
           disabled={loading || !currentZone}
@@ -285,7 +308,7 @@ export const AISidebar = ({ activeZone, zones = [], onSelectZone }) => {
           {loading ? (
             <RefreshCw className="h-4 w-4 animate-spin" />
           ) : (
-            <Sparkles className="h-4 w-4" />
+            <Brain className="h-4 w-4" />
           )}
           <span>{report ? "Refresh AI Assessment" : "Generate AI Assessment"}</span>
         </button>
