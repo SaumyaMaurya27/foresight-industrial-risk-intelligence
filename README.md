@@ -1,12 +1,16 @@
 # Foresight
+
 ## Predictive Industrial Risk Intelligence Platform
+
 ### Tagline
 See Risk Before It Becomes Reality.
+
 ---
 ## Overview
 Foresight is an AI-powered industrial risk intelligence platform designed to predict dangerous compound-risk conditions before they escalate into incidents.
 The platform is built for oil and gas refinery environments where multiple operational and environmental signals must be continuously monitored to ensure worker safety and operational continuity.
 Unlike traditional safety systems that react to isolated alarms, Foresight identifies hazardous combinations of conditions across sensors and operational activities.
+
 ---
 ## The Problem
 Industrial facilities already generate large amounts of safety-related data:
@@ -35,6 +39,7 @@ Traditional safety systems detect individual hazards. Foresight detects compound
 **Example:**
 $$\text{High Gas Levels} + \text{Active Hot Work Permit} + \text{Reduced Ventilation} = \text{Potential Gas Ignition Event}$$
 No individual system would identify this relationship independently. Foresight connects fragmented signals into actionable foresight.
+
 ---
 ## Key Features
 ### Compound Risk Intelligence Engine
