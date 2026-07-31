@@ -38,6 +38,7 @@ The platform then provides:
 Traditional safety systems detect individual hazards. Foresight detects compound risks.
 **Example:**
 $$\text{High Gas Levels} + \text{Active Hot Work Permit} + \text{Reduced Ventilation} = \text{Potential Gas Ignition Event}$$
+
 No individual system would identify this relationship independently. Foresight connects fragmented signals into actionable foresight.
 
 ---
